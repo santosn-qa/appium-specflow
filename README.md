@@ -23,6 +23,5 @@ To run the tests locally, follow these steps:
 
 ## Demo
 
-
-https://github.com/santosn-qa/appium-specflow/assets/26606116/a7a05d4b-43eb-4d34-90a2-fcadf98db252
+https://github.com/santosn-qa/appium-specflow/assets/26606116/e224e0bc-9939-4640-955d-8029e08f1d59
 
