@@ -20,3 +20,9 @@ To run the tests locally, follow these steps:
 3. Build the project using Visual Studio or the .NET CLI.
 4. Connect your Android or iOS device/emulator to your machine.
 5. Execute the tests using the test runner in your preferred IDE or the command line.
+
+## Demo
+
+
+https://github.com/santosn-qa/appium-specflow/assets/26606116/a7a05d4b-43eb-4d34-90a2-fcadf98db252
+
