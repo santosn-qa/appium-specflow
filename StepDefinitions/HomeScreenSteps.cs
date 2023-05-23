@@ -9,6 +9,8 @@ using TechTalk.SpecFlow;
 using NUnit.Framework;
 using System.Drawing;
 using System.Text.RegularExpressions;
+using appium_specflow.Support;
+using DotNetEnv;
 
 namespace appium_specflow.StepDefinitions
 {
@@ -19,30 +21,44 @@ namespace appium_specflow.StepDefinitions
         public WebDriverWait wait;
 
         private byte[] initialScreenshot;
-
-        // Define locators for elements on the home screen
-        private readonly By colorButtonLocator = By.Id("com.lambdatest.proverbial:id/color");
-        private readonly By notificationButtonLocator = By.Id("com.lambdatest.proverbial:id/notification");
-        private readonly By textButtonLocator = By.Id("com.lambdatest.proverbial:id/Text");
-        private readonly By textBoxLocator = By.Id("com.lambdatest.proverbial:id/Textbox");
-        private readonly By toastButtonLocator = By.Id("com.lambdatest.proverbial:id/toast");
-        private readonly By speedTestButtonLocator = By.Id("com.lambdatest.proverbial:id/speedTest");
-        private readonly By homeButtonLocator = By.Id("com.lambdatest.proverbial:id/buttonPage");
+        private string platform;
 
         [BeforeScenario]
         public void Setup()
         {
-            string appiumServerUrl = "http://localhost:4723/wd/hub";
-            string deviceName = "Pixel 3 API 31";
+            // Load environment variables from .env file
+            Env.Load();
 
-            // Initialize the Android driver with desired capabilities
-            var androidOptions = new AppiumOptions();
-            androidOptions = new AppiumOptions();
-            androidOptions.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.Android);
-            androidOptions.AddAdditionalCapability(MobileCapabilityType.DeviceName, deviceName);
-            androidOptions.AddAdditionalCapability("appium:appPackage", "com.lambdatest.proverbial");
-            androidOptions.AddAdditionalCapability("appium:appActivity", "com.lambdatest.proverbial.MainActivity");
-            driver = new AndroidDriver<IWebElement>(new Uri(appiumServerUrl), androidOptions);
+            // Retrieve the environment variables
+            platform = Environment.GetEnvironmentVariable("PLATFORM");
+
+            string url = Environment.GetEnvironmentVariable("URL");
+            string app = Environment.GetEnvironmentVariable("APP");
+            string device = Environment.GetEnvironmentVariable("DEVICE");
+
+            switch (platform)
+            {
+                case "android":
+                    // Initialize the Android driver with desired capabilities
+                    var androidOptions = new AppiumOptions();
+                    androidOptions = new AppiumOptions();
+                    androidOptions.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.Android);
+                    androidOptions.AddAdditionalCapability(MobileCapabilityType.DeviceName, device);
+                    androidOptions.AddAdditionalCapability("appium:appPackage", "com.lambdatest.proverbial");
+                    androidOptions.AddAdditionalCapability("appium:appActivity", "com.lambdatest.proverbial.MainActivity");
+                    driver = new AndroidDriver<IWebElement>(new Uri(url), androidOptions);
+                    break;
+                case "ios":
+                    // Initialize the iOS driver with desired capabilities
+                    var iosOptions = new AppiumOptions();
+                    iosOptions.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.IOS);
+                    iosOptions.AddAdditionalCapability(MobileCapabilityType.DeviceName, device);
+                    iosOptions.AddAdditionalCapability(MobileCapabilityType.App, app);
+                    driver = new IOSDriver<IWebElement>(new Uri(url), iosOptions);
+                    break;
+                default:
+                    throw new NotSupportedException($"Platform '{platform}' is not supported.");
+            }
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
         }
@@ -67,8 +83,12 @@ namespace appium_specflow.StepDefinitions
             // Capture the initial screenshot of the TextView element
             initialScreenshot = ((ITakesScreenshot)driver).GetScreenshot().AsByteArray;
 
-            // Perform the action that causes the color change
-            driver.FindElement(colorButtonLocator).Click();
+            // Locate the color button element based on the platform
+            By colorButtonLocator = AppLocators.colorButtonLocator(platform);
+
+            // Perform actions using the located element
+            IWebElement colorButton = driver.FindElement(colorButtonLocator);
+            colorButton.Click();
         }
 
         [Then(@"I should see a change in color")]
@@ -116,8 +136,12 @@ namespace appium_specflow.StepDefinitions
         [When(@"I click on NOTIFICATION")]
         public void WhenIClickOnNOTIFICATION()
         {
-            // Perform the action to click the notification button in your app
-            driver.FindElement(notificationButtonLocator).Click();
+            // Locate the navigation button element based on the platform
+            By notificationButtonLocator = AppLocators.notificationButtonLocator(platform);
+
+            // Perform actions using the located element
+            IWebElement notificationButton = driver.FindElement(notificationButtonLocator);
+            notificationButton.Click();
         }
 
         [Then(@"I should receive a notification on the device")]
@@ -140,14 +164,24 @@ namespace appium_specflow.StepDefinitions
         [When(@"I click on TEXT")]
         public void WhenIClickOnTEXT()
         {
-            // Perform the action to click the text button in your app
-            driver.FindElement(textButtonLocator).Click();
+            // Locate the text button element based on the platform
+            By textButtonLocator = AppLocators.textButtonLocator(platform);
+
+            // Perform actions using the located element
+            IWebElement textButton = driver.FindElement(textButtonLocator);
+            textButton.Click();
         }
 
         [Then(@"I capture the displayed text")]
         public void ThenICaptureTheDisplayedText()
         {
-            string displayedText = driver.FindElement(textBoxLocator).Text;
+            // Locate the text box element based on the platform
+            By textBoxLocator = AppLocators.textBoxLocator(platform);
+
+            // Perform actions using the located element
+            IWebElement textBox = driver.FindElement(textBoxLocator);
+
+            string displayedText = textBox.Text;
             Console.WriteLine($"Displayed Text: {displayedText}");
 
             // Assert or perform further actions based on the displayed text presence
@@ -157,8 +191,12 @@ namespace appium_specflow.StepDefinitions
         [When(@"I click on TOAST")]
         public void WhenIClickOnTOAST()
         {
-            // Perform the action to click the toast button in your app
-            driver.FindElement(toastButtonLocator).Click();
+            // Locate the toast button element based on the platform
+            By toastButtonLocator = AppLocators.toastButtonLocator(platform);
+
+            // Perform actions using the located element
+            IWebElement toastButton = driver.FindElement(toastButtonLocator);
+            toastButton.Click();
         }
 
         [Then(@"I should see a pop up message")]
@@ -196,8 +234,12 @@ namespace appium_specflow.StepDefinitions
         [When(@"I click on SPEED TEST")]
         public void WhenIClickOnSPEEDTEST()
         {
-            // Perform the action to click the speed test button in your app
-            driver.FindElement(speedTestButtonLocator).Click();
+            // Locate the speed test button element based on the platform
+            By speedTestButtonLocator = AppLocators.speedTestButtonLocator(platform);
+
+            // Perform actions using the located element
+            IWebElement speedTestButton = driver.FindElement(speedTestButtonLocator);
+            speedTestButton.Click();
         }
 
         [Then(@"I start the speed test from the speed test page")]
@@ -244,11 +286,16 @@ namespace appium_specflow.StepDefinitions
             Assert.True(File.Exists(screenshotPath), "Failed to capture the upload/download speed.");
         }
 
+
         [Then(@"I navigate back to the home screen")]
         public void ThenINavigateBackToTheHomeScreen()
         {
-            // Perform the action to go back to the home screen in your app
-            driver.FindElement(homeButtonLocator).Click();
+            // Locate the speed test button element based on the platform
+            By homeButtonLocator = AppLocators.homeButtonLocator(platform);
+
+            // Perform actions using the located element
+            IWebElement homeButton = driver.FindElement(homeButtonLocator);
+            homeButton.Click();
         }
 
 
